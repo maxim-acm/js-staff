@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7"/>
+    <title>Кривая Минковского</title>
+
+    <link type="text/css" rel="stylesheet" href="style.css"/>
+
+    <!--<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>-->
+    <script type="text/javascript" src="../node_modules/url/node_modules/punycode/vendor/requirejs/tests/jquery/scripts/jquery-1.7b2.js"></script>
+    <script type="text/javascript" src="min.js"></script>
+</head>
+<body>
+
+<h1 class="b-title">Кривая Минковского</h1>
+
+<div class="b-content">
+    <canvas class="b-canvas" id="canvas" height="1024" width="1024"></canvas>
+</div>
+
+<div class="b-controls">
+    <p>
+        Глубина построения:
+        <label><input type="radio" name="depth" value="0"/> 1</label>
+        <label><input type="radio" name="depth" value="1"/> 2</label>
+        <label><input type="radio" name="depth" value="2"/> 3</label>
+        <label><input type="radio" name="depth" value="3" checked="checked"/> 4</label>
+        <label><input type="radio" name="depth" value="4"/> 5</label>
+    </p>
+    <p>
+        Цвет заливки:
+        <label><input type="radio" name="color" value="0"/> Синий</label>
+        <label><input type="radio" name="color" value="1" checked="checked"/> Разноцветный</label>
+    </p>
+    <p>
+        Базовая фигура:
+        <label><input type="radio" name="type" value="0"/> Линия</label>
+        <label><input type="radio" name="type" value="1" checked="checked"/> Квадрат</label>
+    </p>
+</div>
+
+
+</body>
+</html>

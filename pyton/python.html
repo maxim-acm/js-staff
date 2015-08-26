@@ -1,0 +1,319 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <!-- Sergey Puzankov -->
+    <meta charset="utf-8"/>
+    <title>Snake Game</title>
+    <style>
+        body {
+            margin: 100px auto;
+            background: #e8d9b0;
+            text-align: center;
+            font: 100% Arial, sans-serif;
+            color: #a65923;
+        }
+        .b-title {
+            color: #8e5c3b;
+        }
+        .b-content {
+            background: #ffefc6;
+            padding: 30px 0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .b-canvas {
+            border: 1px solid #006;
+        }
+    </style>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
+
+    <script>
+        function Game() {
+            var gameStatus = 0,
+                gameCtx = this,
+                timer,
+                timeout = 500,
+                speed = 1,
+                drawCtx = document.getElementById("canvas").getContext("2d"),
+                drawScale = 20;
+
+            this.startGame =  function() {
+                timer = setInterval(updateMove, timeout);
+                gameCtx.setStatus(1);
+                gameCtx.drawScore();
+                gameCtx.drawSpeed();
+            }
+
+            this.stopGame =  function() {
+                clearInterval(timer);
+                gameCtx.setStatus(0);
+            }
+
+            this.pauseGame =  function() {
+                clearInterval(timer);
+                gameCtx.setStatus(-1);
+            }
+
+            this.setSpeedUp = function() {
+                clearInterval(timer);
+                speed += 1;
+                timeout = (800 / speed) + 50;
+
+                timer = setInterval(updateMove, timeout);
+                this.drawSpeed();
+            }
+
+            this.setStatus =  function(newStatus) {
+                gameStatus = newStatus;
+
+                var statusDiv = $('#status');
+
+                switch (gameStatus) {
+                    case 1:
+                        statusDiv.html('on air');
+                        break;
+                    case 0:
+                        statusDiv.html('game over');
+                        break;
+                    case -1:
+                        statusDiv.html('pause');
+                        break;
+                }
+            }
+
+            this.drawScore = function() {
+                var scoreDiv = $('#score');
+
+                scoreDiv.html(this.snake.getLength());
+            }
+
+            this.drawSpeed = function() {
+                var speedDiv = $('#speed');
+
+                speedDiv.html(speed);
+            }
+
+            this.directions = {
+                up:    [ 0,-1 ],
+                down:  [ 0, 1 ],
+                left:  [-1, 0 ],
+                right: [ 1, 0 ]
+            }
+
+            function Field(dimentions) {
+                var width = dimentions[0],
+                    height = dimentions[1];
+
+                // проверка - входят ли координаты в игровое поле. принимает массив из 2х координат
+                this.checkCoords = function(coords) {
+                    return (!(coords[0] >= width || coords[0] < 0 || coords[1] >= height || coords[1] < 0));
+                }
+
+                this.getDimentions = function() {
+                    return [width, height];
+                }
+
+                this.draw = function(ctx, scale) {
+                    ctx.save();
+                    ctx.fillStyle = '#fff7c3';
+                    ctx.fillRect(0, 0, width * scale, height * scale);
+                }
+            }
+
+            function Food() {
+                var coords,
+                    fieldDimentions = gameCtx.field.getDimentions(),
+                    snakeBody = gameCtx.snake.getBody();
+
+                function getRandomCoord(max) {
+                    return Math.floor(Math.random() * max);
+                }
+
+                this.createFood = function() {
+                    coords = [getRandomCoord(fieldDimentions[0]), getRandomCoord(fieldDimentions[1])];
+
+                    for (var i = 0; i < snakeBody.length; i++) {
+                        if (coords[0] == snakeBody[i][0] && coords[1] == snakeBody[i][1]) {
+                            return this.createFood();
+                        }
+                    }
+                    return coords;
+                }
+
+                this.getFoodCoords = function() {
+                    return coords;
+                }
+
+                this.draw = function(ctx, scale) {
+                    var params = [coords[0] * scale, coords[1] * scale, scale, scale];
+
+                    ctx.restore();
+                    ctx.lineWidth = "1";
+                    ctx.fillStyle = '#eb0000'
+                    ctx.fillRect.apply(ctx, params);
+                    ctx.strokeStyle = "#791010";
+                    ctx.strokeRect.apply(ctx, params);
+                }
+
+                this.createFood();
+            }
+
+            function Snake() {
+                // snake init porps
+                var direction = [0, -1],
+                    nextDirection = direction,
+                    body = [[10,10],[11,10],[12,10]];
+
+                this.setDirection = function(newDirection) {
+                    if (!(direction[0] == 0 && newDirection[0] == 0) && !(direction[1] == 0 && newDirection[1] == 0)) {
+
+                        nextDirection = newDirection;
+                    }
+                }
+
+                this.getBody = function() {
+                    return body;
+                }
+
+                this.getLength = function() {
+                    return body.length;
+                }
+
+                this.move = function() {
+                    direction = nextDirection;
+
+                    var oldHead = body[0],
+                        newHead = [oldHead[0] + direction[0], oldHead[1] + direction[1]];
+
+                    function checkSnakeSelfEat() {
+                        for (var i = 0; i < body.length - 1; i++) {
+                            if ((body[i][0] == newHead[0]) && (body[i][1] == newHead[1])) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+
+                    function checkEatFood() {
+                        var foodCoords = gameCtx.food.getFoodCoords();
+
+                        return (foodCoords[0] == newHead[0] && foodCoords[1] == newHead[1]);
+                    }
+
+                    if (checkEatFood()) {
+                        body.unshift(newHead);
+                        gameCtx.food.createFood();
+                        gameCtx.setSpeedUp();
+                        gameCtx.drawScore();
+                    } else if (gameCtx.field.checkCoords(newHead) && !checkSnakeSelfEat()) {
+                        body.unshift(newHead);
+                        body.pop();
+                    } else {
+                        gameCtx.setStatus(0);
+                        gameCtx.stopGame();
+                    }
+                }
+
+                this.draw = function(ctx, scale) {
+                    ctx.restore();
+                    ctx.lineWidth = "1";
+                    ctx.strokeStyle = "#1b4a17";
+
+                    for (var i = 0; i < body.length; i++) {
+                        var params = [body[i][0] * scale, body[i][1] * scale, scale, scale];
+
+                        if (i == 0 ) {
+                            ctx.fillStyle = '#12ff00'
+                            ctx.fillRect.apply(ctx, params);
+                        } else if (i == body.length - 1) {
+                            ctx.fillStyle = '#097e00'
+                            ctx.fillRect.apply(ctx, params);
+                        }
+
+                        ctx.strokeRect.apply(ctx, params);
+
+                    }
+                }
+            }
+
+
+            function updateMove() {
+                gameCtx.snake.move();
+
+                // draw
+                gameCtx.field.draw(drawCtx, drawScale);
+                gameCtx.snake.draw(drawCtx, drawScale);
+                gameCtx.food.draw(drawCtx, drawScale);
+            }
+
+
+            this.field = new Field([20, 20]);
+            this.snake = new Snake();
+            this.food = new Food();
+
+            gameCtx.field.draw(drawCtx, drawScale);
+        }
+
+        $(function() {
+
+            var game = new Game();
+
+            $('#start').click( function() {
+                game.startGame();
+            });
+            $('#stop').click(function() {
+                game.pauseGame();
+            });
+
+            $('#restart').click(function()
+            {
+                game.stopGame();
+                game = new Game();
+            });
+
+            $('body').keydown(function(event) {
+                switch (event.keyCode) {
+                    case  37:
+                        game.snake.setDirection(game.directions.left);
+                        return false;
+                        break;
+                    case  38:
+                        game.snake.setDirection(game.directions.up);
+                        return false;
+                        break;
+                    case  39:
+                        game.snake.setDirection(game.directions.right);
+                        return false;
+                        break;
+                    case  40:
+                        game.snake.setDirection(game.directions.down);
+                        return false;
+                        break;
+                }
+
+            });
+
+        });
+    </script>
+</head>
+<body>
+<h2 class="b-title">Python Game</h2>
+
+<div class="b-content">
+    <canvas class="b-canvas" id="canvas" height="400" width="400">
+
+    </canvas>
+    <br/>
+
+    <input type="button" id="start" value="Start"/>
+    <input type="button" id="stop" value="Pause"/>
+    <br/>
+    <input type="button" id="restart" value="Restart"/>
+    <br/>
+    Game status: <span id="status"></span><br/>
+    Score: <span id="score"></span><br/>
+    Speed: <span id="speed"></span>
+</div>
+
+
+</body>
+</html>

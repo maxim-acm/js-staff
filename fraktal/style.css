@@ -1,0 +1,30 @@
+body {
+    margin: 100px auto;
+
+    text-align: center;
+
+    color: #5F6D67;
+    background: #46524D url('http://d1tijy5l7mg5kk.cloudfront.net/assets/bg-body-fcd575f0a68eee0fc240674c84ee512d.jpg') 0 0 repeat;
+
+    font: 100% "OpenSansLight", Helvetica, Arial, sans-serif;
+}
+
+.b-title {
+    font-size: 3.5em;
+    font-weight: bold;
+    letter-spacing: -0.035em;
+    color: #3F4944;
+}
+
+.b-content {
+    padding: 30px 0;
+
+    border-top: 6px solid #D4D0C5;
+    border-bottom: 6px solid #D4D0C5;
+    background: rgba(255, 255, 255, 0.45);
+}
+
+.b-controls
+{
+    margin-top: 10px;
+}
