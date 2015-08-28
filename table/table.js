@@ -28,9 +28,7 @@ var content = {
     ]
 };
 
-
 var Table = function(content) {
-    console.log(111);
     this.rows = content.table;
 
     this.getCols = function() {
@@ -74,6 +72,7 @@ var Table = function(content) {
         });
         table.appendChild(header);
 
+
         // making rows with data
         this.rows.forEach(function(row) {
             var rowElem = document.createElement('tr');
@@ -92,7 +91,7 @@ var Table = function(content) {
     };
 
     this.init = function() {
-        console.log(this.getCols());
+        this.getCols();
         this.renderTable();
     };
 
@@ -100,8 +99,5 @@ var Table = function(content) {
 };
 
 window.onload = function() {
-    console.log('load');
     var table = new Table(content);
 };
-
-
